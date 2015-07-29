@@ -21,7 +21,7 @@ use Carp;
 use Data::Dumper;
 use HTML::Entities;
 
-our $database = 'evergreen';
+our $database = 'egdatabase';
 our $host     = '127.0.0.1';
 our ($user, $password);
 print "Enter username for database access: ";
@@ -45,6 +45,7 @@ do './patron-info.txt' or die "Failed to parse patron-info.txt: $@ [$!]";
 my @user = @{$main::VAR1};
 $jotsexpected = scalar @user;
 print "I have $jotsexpected patron records to attempt to import.\n  ";
+$main::VAR1 = undef;
 
 open LOG, '>', 'import-patron.log';
 
@@ -71,6 +72,17 @@ for my $user (@user) {
   print LOG " * $$u{first_given_name} $$u{second_given_name} $$u{family_name}.\n";
   $$u{expire_date} ||= $pgnow;
   $$u{create_date} ||= $pgnow;
+  ### Fix things up to avoid violating constraints...
+  # 1. ident_type and ident_type2 must be foreign keys to extant record(s) in config.identification_type
+  for my $k ('ident_type', 'ident_type2') {
+    if ($$u{$k} > 3) {
+      print LOG "    + $k changed from $$u{$k} to 3 (Other)\n";
+      $$u{$k} = 3;
+    }
+  }
+  # 2. certain fiels are not allowed to be NULL, fill in default values for them:
+  $$u{profile} ||= 2; # "Patron"
+  ###
   my $result = addrecord('actor.usr', $u);
   my $uid = $db::added_record_id;
   $uid or die "No user record ID for user: " . Dumper(\$user);
@@ -94,6 +106,10 @@ for my $user (@user) {
     my ($indication, $id, $arec) = @$adr;
     $$arec{usr} = $uid;
     print LOG "    * Address: $$arec{street1} $$arec{street2} $$arec{city} $$arec{state} $$arec{post_code}\n";
+    ### Fix things up to avoid violating constraints...
+    # 1. certain fields are not permitted to be NULL:
+    $$arec{street1} ||= '';
+    $$arec{address_type} ||= 'MAILING';
     if (not $inserted{$id}) {
       $inserted{$id} = addrecord('actor.usr_address', $arec);
       if ($inserted{$id}) {
@@ -111,7 +127,7 @@ for my $user (@user) {
     $$n{creator}   ||= 1;
     $$n{value}       = decode_entities($encval);
     my $len = '(' . (length $$n{value}) . ' bytes)';
-    print LOG "    * Note: $$n{title}: $len\n";
+    print LOG "    * Note: $$n{title} $len\n";
     addrecord('actor.usr_note', $n) or lcarp("Failed to save note: " . Dumper(+{ %$n, encvalue => $encval }));
   }
 }
