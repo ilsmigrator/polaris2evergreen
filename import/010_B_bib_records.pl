@@ -11,9 +11,15 @@
 #    We will be handling item records separately.
 # 5. Under the Tools menu, click Export.
 # 6. Click Start and wait until it finishes.  This takes a bit.
-#    (Started: 9:45am; finished by 10:15; what wizardry is this?)
 # 7. Click Done.
 # 8. The resulting .MRC file is the one this script needs to find.
+# 9. Run this script.  You should get a series of .xml files.
+#10. In the Evergreen staff client, Cataloging->MARC Batch Import/Export
+#    I don't think it matters whether you create a new queue or use existing.
+#11. Make sure "Import Non-Matching Records" is checked.
+#12. File to Upload, Browse, pick each .xml file, Upload.
+#    Wait for it to process (this can take an hour).
+#13. Repeat from step 10 until you have imported all the .xml files.
 
 use strict;
 use Carp;
