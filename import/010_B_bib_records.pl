@@ -6,7 +6,9 @@
 # 1. Under the Utilities menu, choose Exporting,
 # 2. On the dialog box, pull down the Tools menu and choose Configuration
 # 3. Set the paths as you like, so you can find the files it will output.  OK.
-# 4. Checkmark the box to Include item holdings information.
+# 4. DO NOT checkmark the box to Include item holdings information.
+#    Including holdings information will cause the import to fail.
+#    We will be handling item records separately.
 # 5. Under the Tools menu, click Export.
 # 6. Click Start and wait until it finishes.  This takes a bit.
 #    (Started: 9:45am; finished by 10:15; what wizardry is this?)
